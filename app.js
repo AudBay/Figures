@@ -5,10 +5,10 @@ let tokenClient;
 let accessToken = null;
 let fileId = null;
 let data = [];
-let currentView = "overview";
+let view = "kpis";
 
 /* ---------------- INIT ---------------- */
-async function init() {
+window.onload = async () => {
   await waitForGoogle();
 
   await new Promise(r => gapi.load("client", r));
@@ -27,9 +27,7 @@ async function init() {
   });
 
   render();
-}
-
-init();
+};
 
 function waitForGoogle() {
   return new Promise(r => {
@@ -43,11 +41,10 @@ function waitForGoogle() {
 }
 
 /* ---------------- LOGIN ---------------- */
-document.getElementById("loginBtn").onclick = () => {
+document.getElementById("loginBtn").onclick = () =>
   tokenClient.requestAccessToken({ prompt: "consent" });
-};
 
-/* ---------------- DRIVE ---------------- */
+/* ---------------- DRIVE FILE ---------------- */
 async function getFile() {
   const res = await gapi.client.drive.files.list({
     q: "name='data.json'",
@@ -65,6 +62,7 @@ async function getFile() {
   }
 }
 
+/* ---------------- LOAD ---------------- */
 document.getElementById("loadBtn").onclick = async () => {
   await getFile();
 
@@ -77,26 +75,21 @@ document.getElementById("loadBtn").onclick = async () => {
   render();
 };
 
+/* ---------------- SAVE ---------------- */
 document.getElementById("saveBtn").onclick = async () => {
-  const form = new FormData();
-
-  form.append("file",
-    new Blob([JSON.stringify(data)], { type: "application/json" })
-  );
-
   await fetch(
     `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
     {
       method: "PATCH",
       headers: { Authorization: "Bearer " + accessToken },
-      body: form
+      body: new Blob([JSON.stringify(data)], { type: "application/json" })
     }
   );
 
   alert("Saved");
 };
 
-/* ---------------- DATA ---------------- */
+/* ---------------- ADD ENTRY ---------------- */
 function addEntry() {
   data.push({
     name: name.value,
@@ -113,22 +106,21 @@ function addEntry() {
   render();
 }
 
-/* ---------------- METRICS ---------------- */
+/* ---------------- METRICS ENGINE ---------------- */
 function enrich(d) {
   return d.map(e => ({
     ...e,
-    waxToHHC: e.wax ? (e.hhc / e.wax) * 100 : 0,
-    hhcToHCE: e.hhc ? (e.hce / e.hhc) * 100 : 0,
-    hceToSale: e.hce ? (e.hearingAids / e.hce) * 100 : 0,
-    avgSale: e.hearingAids ? e.sales / e.hearingAids : 0,
     net: e.sales - e.refunds,
-    revenuePerHHC: e.hhc ? e.sales / e.hhc : 0
+    waxToHHC: e.wax ? e.hhc / e.wax : 0,
+    hhcToHCE: e.hhc ? e.hce / e.hhc : 0,
+    hceToSale: e.hce ? e.hearingAids / e.hce : 0,
+    avgSale: e.hearingAids ? e.sales / e.hearingAids : 0
   }));
 }
 
 /* ---------------- VIEWS ---------------- */
 function setView(v) {
-  currentView = v;
+  view = v;
   render();
 }
 
@@ -136,30 +128,28 @@ function render() {
   const d = enrich(data);
   const el = document.getElementById("view");
 
-  if (currentView === "overview") {
+  if (view === "kpis") {
+    const total = d.reduce((a,b)=>a+b.net,0);
+
     el.innerHTML = `
       <div class="card">
-        <h2>Overview</h2>
-        <pre>${JSON.stringify(d, null, 2)}</pre>
+        <h2>KPIs</h2>
+        <p>Total Revenue: £${total.toFixed(2)}</p>
+        <p>Top Performer: ${d.sort((a,b)=>b.net-a.net)[0]?.name || "-"}</p>
       </div>
     `;
   }
 
-  if (currentView === "table") {
+  if (view === "table") {
     el.innerHTML = `
       <div class="card">
-        <h2>Table</h2>
         <table>
-          <tr>
-            <th>Name</th><th>Period</th><th>Sales</th><th>Net</th><th>HHC→HCE%</th>
-          </tr>
-          ${d.map(e => `
+          <tr><th>Name</th><th>Net</th><th>HHC→HCE</th></tr>
+          ${d.map(e=>`
             <tr>
               <td>${e.name}</td>
-              <td>${e.period}</td>
-              <td>${e.sales}</td>
               <td>${e.net}</td>
-              <td>${e.hhcToHCE.toFixed(1)}%</td>
+              <td>${(e.hhcToHCE*100).toFixed(1)}%</td>
             </tr>
           `).join("")}
         </table>
@@ -167,26 +157,17 @@ function render() {
     `;
   }
 
-  if (currentView === "leaderboard") {
-    const ranked = [...d].sort((a,b)=>b.net-a.net);
-
+  if (view === "insights") {
     el.innerHTML = `
       <div class="card">
-        <h2>Leaderboard</h2>
-        ${ranked.map((e,i)=>`
-          <p>#${i+1} ${e.name} - £${e.net}</p>
-        `).join("")}
+        <h2>Insights</h2>
+        <p>Best: ${d.sort((a,b)=>b.net-a.net)[0]?.name}</p>
+        <p>Worst conversion: ${d.sort((a,b)=>a.hhcToHCE-b.hhcToHCE)[0]?.name}</p>
       </div>
     `;
   }
 
-  if (currentView === "insights") {
-    el.innerHTML = `
-      <div class="card">
-        <h2>Insights</h2>
-        <p>Top performer: ${d.sort((a,b)=>b.net-a.net)[0]?.name || "-"}</p>
-        <p>Lowest conversion: ${d.sort((a,b)=>a.hhcToHCE-b.hhcToHCE)[0]?.name || "-"}</p>
-      </div>
-    `;
+  if (view === "charts") {
+    el.innerHTML = `<div class="card"><p>Charts ready for upgrade (next step)</p></div>`;
   }
 }
