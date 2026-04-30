@@ -6,32 +6,66 @@ let accessToken = null;
 let fileId = null;
 let data = [];
 
-// INIT
-window.onload = () => {
-  gapi.load("client", initGapi);
+/* ---------------------------
+   WAIT FOR GOOGLE LIBRARIES
+----------------------------*/
+function waitForGoogle() {
+  return new Promise(resolve => {
+    const check = () => {
+      if (window.google && window.google.accounts && window.gapi) {
+        resolve();
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
+}
+
+/* ---------------------------
+   INIT APP
+----------------------------*/
+async function init() {
+  await waitForGoogle();
+
+  await new Promise(resolve => {
+    gapi.load("client", resolve);
+  });
+
+  await gapi.client.init({
+    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]
+  });
 
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
     callback: (tokenResponse) => {
       accessToken = tokenResponse.access_token;
-      alert("Logged in successfully");
+      console.log("Login success");
+      alert("Logged in");
     }
   });
-};
 
-async function initGapi() {
-  await gapi.client.init({
-    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]
-  });
+  console.log("App ready");
 }
 
-// LOGIN
+init();
+
+/* ---------------------------
+   LOGIN (FIXED)
+----------------------------*/
 document.getElementById("loginBtn").onclick = () => {
-  tokenClient.requestAccessToken();
+  if (!tokenClient) {
+    alert("Still loading Google services, try again");
+    return;
+  }
+
+  tokenClient.requestAccessToken({ prompt: "consent" });
 };
 
-// FIND OR CREATE FILE
+/* ---------------------------
+   FIND OR CREATE FILE
+----------------------------*/
 async function getFile() {
   const res = await gapi.client.drive.files.list({
     q: "name='data.json'",
@@ -56,8 +90,12 @@ async function getFile() {
   }
 }
 
-// LOAD DATA
+/* ---------------------------
+   LOAD
+----------------------------*/
 document.getElementById("loadBtn").onclick = async () => {
+  if (!accessToken) return alert("Login first");
+
   await getFile();
 
   const res = await fetch(
@@ -73,8 +111,12 @@ document.getElementById("loadBtn").onclick = async () => {
   render();
 };
 
-// SAVE DATA
+/* ---------------------------
+   SAVE
+----------------------------*/
 document.getElementById("saveBtn").onclick = async () => {
+  if (!accessToken) return alert("Login first");
+
   const metadata = {
     name: "data.json",
     mimeType: "application/json"
@@ -95,12 +137,14 @@ document.getElementById("saveBtn").onclick = async () => {
     }
   );
 
-  alert("Saved to Google Drive");
+  alert("Saved");
 };
 
-// ADD ENTRY
+/* ---------------------------
+   ADD ENTRY
+----------------------------*/
 function addEntry() {
-  const entry = {
+  data.push({
     name: document.getElementById("name").value,
     period: Number(document.getElementById("period").value),
     sales: Number(document.getElementById("sales").value),
@@ -109,30 +153,25 @@ function addEntry() {
     waxRevenue: Number(document.getElementById("waxRevenue").value),
     refunds: Number(document.getElementById("refunds").value),
     hhc: Number(document.getElementById("hhc").value),
-    hce: Number(document.getElementById("hce").value),
-    timestamp: new Date().toISOString()
-  };
+    hce: Number(document.getElementById("hce").value)
+  });
 
-  data.push(entry);
   render();
 }
 
-// CALCULATIONS
-function calculateMetrics(d) {
-  return d.map(e => ({
+/* ---------------------------
+   METRICS
+----------------------------*/
+function render() {
+  const output = data.map(e => ({
     ...e,
     waxToHHC: e.wax ? (e.hhc / e.wax) * 100 : 0,
     hhcToHCE: e.hhc ? (e.hce / e.hhc) * 100 : 0,
     hceToSale: e.hce ? (e.hearingAids / e.hce) * 100 : 0,
     avgSale: e.hearingAids ? e.sales / e.hearingAids : 0,
-    netRevenue: e.sales - e.refunds
+    net: e.sales - e.refunds
   }));
-}
-
-// RENDER
-function render() {
-  const calculated = calculateMetrics(data);
 
   document.getElementById("output").textContent =
-    JSON.stringify(calculated, null, 2);
+    JSON.stringify(output, null, 2);
 }
