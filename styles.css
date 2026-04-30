@@ -2,12 +2,8 @@ body {
   margin: 0;
   font-family: Arial;
   background: #0b1220;
-  color: #e2e8f0;
-}
-
-.layout {
+  color: white;
   display: flex;
-  height: 100vh;
 }
 
 /* SIDEBAR */
@@ -15,6 +11,7 @@ body {
   width: 220px;
   background: #111827;
   padding: 20px;
+  height: 100vh;
 }
 
 .sidebar button {
@@ -25,10 +22,6 @@ body {
   border: none;
   color: white;
   cursor: pointer;
-}
-
-.sidebar button:hover {
-  background: #374151;
 }
 
 /* MAIN */
@@ -51,8 +44,8 @@ input {
   padding: 8px;
   width: 250px;
   background: #0f172a;
-  border: 1px solid #334155;
   color: white;
+  border: 1px solid #334155;
 }
 
 button {
