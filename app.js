@@ -6,9 +6,9 @@ let accessToken = null;
 let fileId = null;
 let data = [];
 let view = "overview";
+let editIndex = null;
 let chart;
 
-/* ---------------- INIT ---------------- */
 window.onload = async () => {
   await waitForGoogle();
 
@@ -21,7 +21,7 @@ window.onload = async () => {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
-    callback: (t) => accessToken = t.access_token
+    callback: t => accessToken = t.access_token
   });
 
   render();
@@ -38,20 +38,19 @@ function waitForGoogle() {
   });
 }
 
-/* ---------------- LOGIN ---------------- */
+/* LOGIN */
 document.getElementById("loginBtn").onclick = () =>
   tokenClient.requestAccessToken({ prompt: "consent" });
 
-/* ---------------- DRIVE ---------------- */
+/* DRIVE */
 async function getFile() {
   const res = await gapi.client.drive.files.list({
     q: "name='data.json'",
     fields: "files(id)"
   });
 
-  if (res.result.files.length) {
-    fileId = res.result.files[0].id;
-  } else {
+  if (res.result.files.length) fileId = res.result.files[0].id;
+  else {
     const file = await gapi.client.drive.files.create({
       resource: { name: "data.json", mimeType: "application/json" },
       media: { mimeType: "application/json", body: "[]" }
@@ -60,7 +59,6 @@ async function getFile() {
   }
 }
 
-/* ---------------- LOAD ---------------- */
 document.getElementById("loadBtn").onclick = async () => {
   await getFile();
 
@@ -73,7 +71,6 @@ document.getElementById("loadBtn").onclick = async () => {
   render();
 };
 
-/* ---------------- SAVE ---------------- */
 document.getElementById("saveBtn").onclick = async () => {
   await fetch(
     `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
@@ -87,7 +84,7 @@ document.getElementById("saveBtn").onclick = async () => {
   alert("Saved");
 };
 
-/* ---------------- ADD ---------------- */
+/* ADD */
 function addEntry() {
   data.push({
     name: name.value,
@@ -104,23 +101,62 @@ function addEntry() {
   render();
 }
 
-/* ---------------- METRICS ---------------- */
-function calc(d) {
-  return d.map(e => {
-    const net = e.sales - e.refunds;
+/* EDIT */
+function openEdit(i) {
+  editIndex = i;
+  const e = data[i];
 
-    return {
-      ...e,
-      net,
-      waxToHHC: e.wax ? e.hhc / e.wax : 0,
-      hhcToHCE: e.hhc ? e.hce / e.hhc : 0,
-      hceToSale: e.hce ? e.hearingAids / e.hce : 0,
-      avgSale: e.hearingAids ? e.sales / e.hearingAids : 0
-    };
-  });
+  e_name.value = e.name;
+  e_period.value = e.period;
+  e_sales.value = e.sales;
+  e_hearingAids.value = e.hearingAids;
+  e_wax.value = e.wax;
+  e_waxRevenue.value = e.waxRevenue;
+  e_refunds.value = e.refunds;
+  e_hhc.value = e.hhc;
+  e_hce.value = e.hce;
+
+  modal.classList.remove("hidden");
 }
 
-/* ---------------- VIEWS ---------------- */
+function saveEdit() {
+  data[editIndex] = {
+    name: e_name.value,
+    period: +e_period.value,
+    sales: +e_sales.value,
+    hearingAids: +e_hearingAids.value,
+    wax: +e_wax.value,
+    waxRevenue: +e_waxRevenue.value,
+    refunds: +e_refunds.value,
+    hhc: +e_hhc.value,
+    hce: +e_hce.value
+  };
+
+  closeModal();
+  render();
+}
+
+function closeModal() {
+  modal.classList.add("hidden");
+}
+
+/* DELETE */
+function deleteEntry(i) {
+  data.splice(i, 1);
+  render();
+}
+
+/* CALC */
+function calc(d) {
+  return d.map(e => ({
+    ...e,
+    net: e.sales - e.refunds,
+    hhcToHCE: e.hhc ? e.hce / e.hhc : 0,
+    hceToSale: e.hce ? e.hearingAids / e.hce : 0
+  }));
+}
+
+/* VIEW */
 function setView(v) {
   view = v;
   render();
@@ -130,34 +166,35 @@ function render() {
   const d = calc(data);
   const el = document.getElementById("view");
 
-  /* OVERVIEW */
   if (view === "overview") {
     const total = d.reduce((a,b)=>a+b.net,0);
 
     el.innerHTML = `
-      <div class="kpis">
-        <div class="kpi"><h3>Revenue</h3><p>£${total.toFixed(2)}</p></div>
-        <div class="kpi"><h3>Entries</h3><p>${d.length}</p></div>
-        <div class="kpi"><h3>Top</h3><p>${d.sort((a,b)=>b.net-a.net)[0]?.name||"-"}</p></div>
-        <div class="kpi"><h3>Avg Sale</h3><p>£${(total/(d.length||1)).toFixed(2)}</p></div>
+      <div class="card">
+        <h2>Overview</h2>
+        <p>Revenue: £${total.toFixed(2)}</p>
+        <p>Records: ${d.length}</p>
       </div>
     `;
   }
 
-  /* TABLE */
   if (view === "table") {
     el.innerHTML = `
       <div class="card">
         <table>
           <tr>
-            <th>Name</th><th>Net</th><th>HHC→HCE</th><th>Sale Conv</th>
+            <th>Name</th>
+            <th>Net</th>
+            <th>Conversion</th>
+            <th>Actions</th>
           </tr>
-          ${d.map(e=>`
+
+          ${d.map((e,i)=>`
             <tr>
-              <td>${e.name}</td>
+              <td onclick="openEdit(${i})">${e.name}</td>
               <td>${e.net}</td>
               <td>${(e.hhcToHCE*100).toFixed(1)}%</td>
-              <td>${(e.hceToSale*100).toFixed(1)}%</td>
+              <td><button onclick="deleteEntry(${i})">Delete</button></td>
             </tr>
           `).join("")}
         </table>
@@ -165,19 +202,7 @@ function render() {
     `;
   }
 
-  /* INSIGHTS */
-  if (view === "performance") {
-    el.innerHTML = `
-      <div class="card">
-        <h2>Performance Insights</h2>
-        <p>Best performer: ${d.sort((a,b)=>b.net-a.net)[0]?.name}</p>
-        <p>Weakest conversion: ${d.sort((a,b)=>a.hhcToHCE-b.hhcToHCE)[0]?.name}</p>
-      </div>
-    `;
-  }
-
-  /* CHARTS */
-  if (view === "funnels") {
+  if (view === "charts") {
     el.innerHTML = `<canvas id="chart"></canvas>`;
 
     setTimeout(() => {
@@ -196,5 +221,16 @@ function render() {
         }
       });
     }, 100);
+  }
+
+  if (view === "insights") {
+    const best = d.sort((a,b)=>b.net-a.net)[0];
+
+    el.innerHTML = `
+      <div class="card">
+        <h2>Insights</h2>
+        <p>Top performer: ${best?.name}</p>
+      </div>
+    `;
   }
 }
