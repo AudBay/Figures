@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Audiology Dashboard</title>
 
+  <!-- Google APIs -->
   <script src="https://accounts.google.com/gsi/client"></script>
   <script src="https://apis.google.com/js/api.js"></script>
 
@@ -11,30 +12,33 @@
 </head>
 
 <body>
-  <h1>Audiology Dashboard</h1>
 
-  <button id="loginBtn">Login with Google</button>
-  <button id="loadBtn">Load</button>
-  <button id="saveBtn">Save</button>
+<h1>Audiology Dashboard</h1>
 
-  <hr>
+<button id="loginBtn">Login with Google</button>
+<button id="loadBtn">Load Data</button>
+<button id="saveBtn">Save Data</button>
 
-  <div>
-    <input id="name" placeholder="Audiologist">
-    <input id="period" type="number" placeholder="Period">
-    <input id="sales" type="number" placeholder="Sales">
-    <input id="hearingAids" type="number" placeholder="Hearing Aids">
-    <input id="wax" type="number" placeholder="Wax Removals">
-    <input id="waxRevenue" type="number" placeholder="Wax Revenue">
-    <input id="refunds" type="number" placeholder="Refunds">
-    <input id="hhc" type="number" placeholder="HHC">
-    <input id="hce" type="number" placeholder="HCE">
+<hr>
 
-    <button onclick="addEntry()">Add Entry</button>
-  </div>
+<h3>Add Entry</h3>
 
-  <pre id="output"></pre>
+<input id="name" placeholder="Audiologist">
+<input id="period" type="number" placeholder="Period">
+<input id="sales" type="number" placeholder="Sales (£)">
+<input id="hearingAids" type="number" placeholder="Hearing Aids">
+<input id="wax" type="number" placeholder="Wax Removals">
+<input id="waxRevenue" type="number" placeholder="Wax Revenue">
+<input id="refunds" type="number" placeholder="Refunds">
+<input id="hhc" type="number" placeholder="HHC">
+<input id="hce" type="number" placeholder="HCE">
 
-  <script src="app.js"></script>
+<button onclick="addEntry()">Add Entry</button>
+
+<h3>Output</h3>
+<pre id="output"></pre>
+
+<script src="app.js"></script>
+
 </body>
 </html>
