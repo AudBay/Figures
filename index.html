@@ -2,65 +2,54 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Audiology Analytics</title>
-
-<script src="https://accounts.google.com/gsi/client"></script>
-<script src="https://apis.google.com/js/api.js"></script>
+<title>Audiology Enterprise Dashboard</title>
 
 <link rel="stylesheet" href="styles.css">
+
+<!-- EVERYTHING IS HANDLED HERE -->
+<script src="https://accounts.google.com/gsi/client"></script>
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="app.js" defer></script>
 </head>
 
 <body>
 
-<div class="layout">
+<div class="sidebar">
+  <h2>Dashboard</h2>
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <h2>📊 Dashboard</h2>
+  <button onclick="setView('kpis')">KPIs</button>
+  <button onclick="setView('charts')">Charts</button>
+  <button onclick="setView('table')">Table</button>
+  <button onclick="setView('insights')">Insights</button>
 
-    <button onclick="setView('overview')">Overview</button>
-    <button onclick="setView('table')">Data Table</button>
-    <button onclick="setView('leaderboard')">Leaderboard</button>
-    <button onclick="setView('insights')">Insights</button>
+  <hr>
 
-    <hr>
-
-    <button id="loginBtn">Login</button>
-    <button id="loadBtn">Load</button>
-    <button id="saveBtn">Save</button>
-  </div>
-
-  <!-- MAIN -->
-  <div class="main">
-
-    <h1>Audiology Analytics System</h1>
-
-    <!-- INPUT -->
-    <div class="card">
-      <h3>Add Entry</h3>
-
-      <input id="name" placeholder="Audiologist">
-      <input id="period" type="number" placeholder="Period">
-
-      <input id="sales" type="number" placeholder="Total Sales">
-      <input id="hearingAids" type="number" placeholder="Hearing Aids">
-      <input id="wax" type="number" placeholder="Wax Removals">
-      <input id="waxRevenue" type="number" placeholder="Wax Revenue">
-
-      <input id="refunds" type="number" placeholder="Refunds">
-      <input id="hhc" type="number" placeholder="HHC">
-      <input id="hce" type="number" placeholder="HCE">
-
-      <button onclick="addEntry()">Add</button>
-    </div>
-
-    <!-- DYNAMIC VIEW -->
-    <div id="view"></div>
-
-  </div>
+  <button id="loginBtn">Login</button>
+  <button id="loadBtn">Load</button>
+  <button id="saveBtn">Save</button>
 </div>
 
-<script src="app.js"></script>
+<div class="main">
+
+  <h1>Audiology Analytics</h1>
+
+  <div class="card">
+    <input id="name" placeholder="Audiologist">
+    <input id="period" type="number" placeholder="Period">
+    <input id="sales" type="number" placeholder="Sales">
+    <input id="hearingAids" type="number" placeholder="Hearing Aids">
+    <input id="wax" type="number" placeholder="Wax">
+    <input id="waxRevenue" type="number" placeholder="Wax Revenue">
+    <input id="refunds" type="number" placeholder="Refunds">
+    <input id="hhc" type="number" placeholder="HHC">
+    <input id="hce" type="number" placeholder="HCE">
+
+    <button onclick="addEntry()">Add Entry</button>
+  </div>
+
+  <div id="view"></div>
+
+</div>
 
 </body>
 </html>
