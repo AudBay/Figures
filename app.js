@@ -6,9 +6,9 @@ let accessToken = null;
 let fileId = null;
 let data = [];
 
-/* ---------------------------
+/* --------------------------
    WAIT FOR GOOGLE LIBRARIES
-----------------------------*/
+---------------------------*/
 function waitForGoogle() {
   return new Promise(resolve => {
     const check = () => {
@@ -22,50 +22,72 @@ function waitForGoogle() {
   });
 }
 
-/* ---------------------------
-   INIT APP
-----------------------------*/
+/* --------------------------
+   INIT APP (SAFE ORDER)
+---------------------------*/
 async function init() {
   await waitForGoogle();
 
-  await new Promise(resolve => {
-    gapi.load("client", resolve);
-  });
+  await new Promise(resolve => gapi.load("client", resolve));
 
   await gapi.client.init({
-    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]
+    discoveryDocs: [
+      "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
+    ]
   });
+
+  console.log("Drive API ready");
 
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
-    callback: (tokenResponse) => {
-      accessToken = tokenResponse.access_token;
-      console.log("Login success");
-      alert("Logged in");
+    callback: async (tokenResponse) => {
+      try {
+        accessToken = tokenResponse.access_token;
+
+        console.log("Token received");
+
+        // IMPORTANT: test immediately
+        await testDrive();
+
+        alert("Login successful");
+      } catch (err) {
+        console.error(err);
+        alert("Login worked but Drive failed");
+      }
     }
   });
-
-  console.log("App ready");
 }
 
 init();
 
-/* ---------------------------
-   LOGIN (FIXED)
-----------------------------*/
+/* --------------------------
+   LOGIN
+---------------------------*/
 document.getElementById("loginBtn").onclick = () => {
   if (!tokenClient) {
-    alert("Still loading Google services, try again");
+    alert("Still loading Google, try again in 2 seconds");
     return;
   }
 
   tokenClient.requestAccessToken({ prompt: "consent" });
 };
 
-/* ---------------------------
+/* --------------------------
+   TEST DRIVE CONNECTION
+---------------------------*/
+async function testDrive() {
+  await gapi.client.drive.files.list({
+    pageSize: 1,
+    fields: "files(id, name)"
+  });
+
+  console.log("Drive connection OK");
+}
+
+/* --------------------------
    FIND OR CREATE FILE
-----------------------------*/
+---------------------------*/
 async function getFile() {
   const res = await gapi.client.drive.files.list({
     q: "name='data.json'",
@@ -90,9 +112,9 @@ async function getFile() {
   }
 }
 
-/* ---------------------------
-   LOAD
-----------------------------*/
+/* --------------------------
+   LOAD DATA
+---------------------------*/
 document.getElementById("loadBtn").onclick = async () => {
   if (!accessToken) return alert("Login first");
 
@@ -111,9 +133,9 @@ document.getElementById("loadBtn").onclick = async () => {
   render();
 };
 
-/* ---------------------------
-   SAVE
-----------------------------*/
+/* --------------------------
+   SAVE DATA
+---------------------------*/
 document.getElementById("saveBtn").onclick = async () => {
   if (!accessToken) return alert("Login first");
 
@@ -137,12 +159,12 @@ document.getElementById("saveBtn").onclick = async () => {
     }
   );
 
-  alert("Saved");
+  alert("Saved to Drive");
 };
 
-/* ---------------------------
+/* --------------------------
    ADD ENTRY
-----------------------------*/
+---------------------------*/
 function addEntry() {
   data.push({
     name: document.getElementById("name").value,
@@ -153,15 +175,16 @@ function addEntry() {
     waxRevenue: Number(document.getElementById("waxRevenue").value),
     refunds: Number(document.getElementById("refunds").value),
     hhc: Number(document.getElementById("hhc").value),
-    hce: Number(document.getElementById("hce").value)
+    hce: Number(document.getElementById("hce").value),
+    time: new Date().toISOString()
   });
 
   render();
 }
 
-/* ---------------------------
+/* --------------------------
    METRICS
-----------------------------*/
+---------------------------*/
 function render() {
   const output = data.map(e => ({
     ...e,
