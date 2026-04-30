@@ -2,52 +2,69 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Audiology Enterprise Dashboard</title>
+<title>Audiology BI Dashboard</title>
 
 <link rel="stylesheet" href="styles.css">
 
-<!-- EVERYTHING IS HANDLED HERE -->
 <script src="https://accounts.google.com/gsi/client"></script>
 <script src="https://apis.google.com/js/api.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script src="app.js" defer></script>
 </head>
 
 <body>
 
-<div class="sidebar">
-  <h2>Dashboard</h2>
+<div class="layout">
 
-  <button onclick="setView('kpis')">KPIs</button>
-  <button onclick="setView('charts')">Charts</button>
-  <button onclick="setView('table')">Table</button>
-  <button onclick="setView('insights')">Insights</button>
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h2>BI Dashboard</h2>
 
-  <hr>
+    <button onclick="setView('overview')">Overview</button>
+    <button onclick="setView('performance')">Performance</button>
+    <button onclick="setView('funnels')">Funnels</button>
+    <button onclick="setView('table')">Data</button>
 
-  <button id="loginBtn">Login</button>
-  <button id="loadBtn">Load</button>
-  <button id="saveBtn">Save</button>
-</div>
+    <hr>
 
-<div class="main">
-
-  <h1>Audiology Analytics</h1>
-
-  <div class="card">
-    <input id="name" placeholder="Audiologist">
-    <input id="period" type="number" placeholder="Period">
-    <input id="sales" type="number" placeholder="Sales">
-    <input id="hearingAids" type="number" placeholder="Hearing Aids">
-    <input id="wax" type="number" placeholder="Wax">
-    <input id="waxRevenue" type="number" placeholder="Wax Revenue">
-    <input id="refunds" type="number" placeholder="Refunds">
-    <input id="hhc" type="number" placeholder="HHC">
-    <input id="hce" type="number" placeholder="HCE">
-
-    <button onclick="addEntry()">Add Entry</button>
+    <button id="loginBtn">Login</button>
+    <button id="loadBtn">Load</button>
+    <button id="saveBtn">Save</button>
   </div>
 
-  <div id="view"></div>
+  <!-- MAIN -->
+  <div class="main">
+
+    <div class="header">
+      <h1>Audiology BI Analytics</h1>
+    </div>
+
+    <!-- INPUT PANEL -->
+    <div class="card glass">
+      <h3>Add Record</h3>
+
+      <div class="grid">
+        <input id="name" placeholder="Audiologist">
+        <input id="period" type="number" placeholder="Period">
+
+        <input id="sales" type="number" placeholder="Sales">
+        <input id="hearingAids" type="number" placeholder="Hearing Aids">
+        <input id="wax" type="number" placeholder="Wax">
+        <input id="waxRevenue" type="number" placeholder="Wax Revenue">
+
+        <input id="refunds" type="number" placeholder="Refunds">
+        <input id="hhc" type="number" placeholder="HHC">
+        <input id="hce" type="number" placeholder="HCE">
+      </div>
+
+      <button onclick="addEntry()">Add Entry</button>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="view"></div>
+
+  </div>
 
 </div>
 
