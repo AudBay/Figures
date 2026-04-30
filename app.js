@@ -5,196 +5,188 @@ let tokenClient;
 let accessToken = null;
 let fileId = null;
 let data = [];
+let currentView = "overview";
 
-/* --------------------------
-   WAIT FOR GOOGLE LIBRARIES
----------------------------*/
-function waitForGoogle() {
-  return new Promise(resolve => {
-    const check = () => {
-      if (window.google && window.google.accounts && window.gapi) {
-        resolve();
-      } else {
-        setTimeout(check, 100);
-      }
-    };
-    check();
-  });
-}
-
-/* --------------------------
-   INIT APP (SAFE ORDER)
----------------------------*/
+/* ---------------- INIT ---------------- */
 async function init() {
   await waitForGoogle();
 
-  await new Promise(resolve => gapi.load("client", resolve));
+  await new Promise(r => gapi.load("client", r));
 
   await gapi.client.init({
-    discoveryDocs: [
-      "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
-    ]
+    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]
   });
-
-  console.log("Drive API ready");
 
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
-    callback: async (tokenResponse) => {
-      try {
-        accessToken = tokenResponse.access_token;
-
-        console.log("Token received");
-
-        // IMPORTANT: test immediately
-        await testDrive();
-
-        alert("Login successful");
-      } catch (err) {
-        console.error(err);
-        alert("Login worked but Drive failed");
-      }
+    callback: (t) => {
+      accessToken = t.access_token;
+      alert("Logged in");
     }
   });
+
+  render();
 }
 
 init();
 
-/* --------------------------
-   LOGIN
----------------------------*/
-document.getElementById("loginBtn").onclick = () => {
-  if (!tokenClient) {
-    alert("Still loading Google, try again in 2 seconds");
-    return;
-  }
+function waitForGoogle() {
+  return new Promise(r => {
+    const i = setInterval(() => {
+      if (window.google && window.gapi) {
+        clearInterval(i);
+        r();
+      }
+    }, 100);
+  });
+}
 
+/* ---------------- LOGIN ---------------- */
+document.getElementById("loginBtn").onclick = () => {
   tokenClient.requestAccessToken({ prompt: "consent" });
 };
 
-/* --------------------------
-   TEST DRIVE CONNECTION
----------------------------*/
-async function testDrive() {
-  await gapi.client.drive.files.list({
-    pageSize: 1,
-    fields: "files(id, name)"
-  });
-
-  console.log("Drive connection OK");
-}
-
-/* --------------------------
-   FIND OR CREATE FILE
----------------------------*/
+/* ---------------- DRIVE ---------------- */
 async function getFile() {
   const res = await gapi.client.drive.files.list({
     q: "name='data.json'",
-    fields: "files(id, name)"
+    fields: "files(id)"
   });
 
-  if (res.result.files.length > 0) {
+  if (res.result.files.length) {
     fileId = res.result.files[0].id;
   } else {
     const file = await gapi.client.drive.files.create({
-      resource: {
-        name: "data.json",
-        mimeType: "application/json"
-      },
-      media: {
-        mimeType: "application/json",
-        body: JSON.stringify([])
-      }
+      resource: { name: "data.json", mimeType: "application/json" },
+      media: { mimeType: "application/json", body: "[]" }
     });
-
     fileId = file.result.id;
   }
 }
 
-/* --------------------------
-   LOAD DATA
----------------------------*/
 document.getElementById("loadBtn").onclick = async () => {
-  if (!accessToken) return alert("Login first");
-
   await getFile();
 
   const res = await fetch(
     `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-    {
-      headers: {
-        Authorization: "Bearer " + accessToken
-      }
-    }
+    { headers: { Authorization: "Bearer " + accessToken } }
   );
 
   data = await res.json();
   render();
 };
 
-/* --------------------------
-   SAVE DATA
----------------------------*/
 document.getElementById("saveBtn").onclick = async () => {
-  if (!accessToken) return alert("Login first");
-
-  const metadata = {
-    name: "data.json",
-    mimeType: "application/json"
-  };
-
   const form = new FormData();
-  form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
-  form.append("file", new Blob([JSON.stringify(data)], { type: "application/json" }));
+
+  form.append("file",
+    new Blob([JSON.stringify(data)], { type: "application/json" })
+  );
 
   await fetch(
-    `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`,
+    `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
     {
       method: "PATCH",
-      headers: {
-        Authorization: "Bearer " + accessToken
-      },
+      headers: { Authorization: "Bearer " + accessToken },
       body: form
     }
   );
 
-  alert("Saved to Drive");
+  alert("Saved");
 };
 
-/* --------------------------
-   ADD ENTRY
----------------------------*/
+/* ---------------- DATA ---------------- */
 function addEntry() {
   data.push({
-    name: document.getElementById("name").value,
-    period: Number(document.getElementById("period").value),
-    sales: Number(document.getElementById("sales").value),
-    hearingAids: Number(document.getElementById("hearingAids").value),
-    wax: Number(document.getElementById("wax").value),
-    waxRevenue: Number(document.getElementById("waxRevenue").value),
-    refunds: Number(document.getElementById("refunds").value),
-    hhc: Number(document.getElementById("hhc").value),
-    hce: Number(document.getElementById("hce").value),
-    time: new Date().toISOString()
+    name: name.value,
+    period: +period.value,
+    sales: +sales.value,
+    hearingAids: +hearingAids.value,
+    wax: +wax.value,
+    waxRevenue: +waxRevenue.value,
+    refunds: +refunds.value,
+    hhc: +hhc.value,
+    hce: +hce.value
   });
 
   render();
 }
 
-/* --------------------------
-   METRICS
----------------------------*/
-function render() {
-  const output = data.map(e => ({
+/* ---------------- METRICS ---------------- */
+function enrich(d) {
+  return d.map(e => ({
     ...e,
     waxToHHC: e.wax ? (e.hhc / e.wax) * 100 : 0,
     hhcToHCE: e.hhc ? (e.hce / e.hhc) * 100 : 0,
     hceToSale: e.hce ? (e.hearingAids / e.hce) * 100 : 0,
     avgSale: e.hearingAids ? e.sales / e.hearingAids : 0,
-    net: e.sales - e.refunds
+    net: e.sales - e.refunds,
+    revenuePerHHC: e.hhc ? e.sales / e.hhc : 0
   }));
+}
 
-  document.getElementById("output").textContent =
-    JSON.stringify(output, null, 2);
+/* ---------------- VIEWS ---------------- */
+function setView(v) {
+  currentView = v;
+  render();
+}
+
+function render() {
+  const d = enrich(data);
+  const el = document.getElementById("view");
+
+  if (currentView === "overview") {
+    el.innerHTML = `
+      <div class="card">
+        <h2>Overview</h2>
+        <pre>${JSON.stringify(d, null, 2)}</pre>
+      </div>
+    `;
+  }
+
+  if (currentView === "table") {
+    el.innerHTML = `
+      <div class="card">
+        <h2>Table</h2>
+        <table>
+          <tr>
+            <th>Name</th><th>Period</th><th>Sales</th><th>Net</th><th>HHC→HCE%</th>
+          </tr>
+          ${d.map(e => `
+            <tr>
+              <td>${e.name}</td>
+              <td>${e.period}</td>
+              <td>${e.sales}</td>
+              <td>${e.net}</td>
+              <td>${e.hhcToHCE.toFixed(1)}%</td>
+            </tr>
+          `).join("")}
+        </table>
+      </div>
+    `;
+  }
+
+  if (currentView === "leaderboard") {
+    const ranked = [...d].sort((a,b)=>b.net-a.net);
+
+    el.innerHTML = `
+      <div class="card">
+        <h2>Leaderboard</h2>
+        ${ranked.map((e,i)=>`
+          <p>#${i+1} ${e.name} - £${e.net}</p>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  if (currentView === "insights") {
+    el.innerHTML = `
+      <div class="card">
+        <h2>Insights</h2>
+        <p>Top performer: ${d.sort((a,b)=>b.net-a.net)[0]?.name || "-"}</p>
+        <p>Lowest conversion: ${d.sort((a,b)=>a.hhcToHCE-b.hhcToHCE)[0]?.name || "-"}</p>
+      </div>
+    `;
+  }
 }
