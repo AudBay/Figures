@@ -1,42 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Audiology Dashboard</title>
+<meta charset="UTF-8">
+<title>Audiology Analytics</title>
 
-  <!-- Google APIs -->
-  <script src="https://accounts.google.com/gsi/client"></script>
-  <script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
+<script src="https://apis.google.com/js/api.js"></script>
 
-  <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-<h1>Audiology Dashboard</h1>
+<div class="layout">
 
-<button id="loginBtn">Login with Google</button>
-<button id="loadBtn">Load Data</button>
-<button id="saveBtn">Save Data</button>
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h2>📊 Dashboard</h2>
 
-<hr>
+    <button onclick="setView('overview')">Overview</button>
+    <button onclick="setView('table')">Data Table</button>
+    <button onclick="setView('leaderboard')">Leaderboard</button>
+    <button onclick="setView('insights')">Insights</button>
 
-<h3>Add Entry</h3>
+    <hr>
 
-<input id="name" placeholder="Audiologist">
-<input id="period" type="number" placeholder="Period">
-<input id="sales" type="number" placeholder="Sales (£)">
-<input id="hearingAids" type="number" placeholder="Hearing Aids">
-<input id="wax" type="number" placeholder="Wax Removals">
-<input id="waxRevenue" type="number" placeholder="Wax Revenue">
-<input id="refunds" type="number" placeholder="Refunds">
-<input id="hhc" type="number" placeholder="HHC">
-<input id="hce" type="number" placeholder="HCE">
+    <button id="loginBtn">Login</button>
+    <button id="loadBtn">Load</button>
+    <button id="saveBtn">Save</button>
+  </div>
 
-<button onclick="addEntry()">Add Entry</button>
+  <!-- MAIN -->
+  <div class="main">
 
-<h3>Output</h3>
-<pre id="output"></pre>
+    <h1>Audiology Analytics System</h1>
+
+    <!-- INPUT -->
+    <div class="card">
+      <h3>Add Entry</h3>
+
+      <input id="name" placeholder="Audiologist">
+      <input id="period" type="number" placeholder="Period">
+
+      <input id="sales" type="number" placeholder="Total Sales">
+      <input id="hearingAids" type="number" placeholder="Hearing Aids">
+      <input id="wax" type="number" placeholder="Wax Removals">
+      <input id="waxRevenue" type="number" placeholder="Wax Revenue">
+
+      <input id="refunds" type="number" placeholder="Refunds">
+      <input id="hhc" type="number" placeholder="HHC">
+      <input id="hce" type="number" placeholder="HCE">
+
+      <button onclick="addEntry()">Add</button>
+    </div>
+
+    <!-- DYNAMIC VIEW -->
+    <div id="view"></div>
+
+  </div>
+</div>
 
 <script src="app.js"></script>
 
