@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Audiology BI Dashboard</title>
+<title>Audiology BI SaaS</title>
 
 <link rel="stylesheet" href="styles.css">
 
@@ -17,14 +17,13 @@
 
 <div class="layout">
 
-  <!-- SIDEBAR -->
   <div class="sidebar">
-    <h2>BI Dashboard</h2>
+    <h2>BI SaaS</h2>
 
     <button onclick="setView('overview')">Overview</button>
-    <button onclick="setView('performance')">Performance</button>
-    <button onclick="setView('funnels')">Funnels</button>
     <button onclick="setView('table')">Data</button>
+    <button onclick="setView('charts')">Charts</button>
+    <button onclick="setView('insights')">Insights</button>
 
     <hr>
 
@@ -33,39 +32,50 @@
     <button id="saveBtn">Save</button>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
 
-    <div class="header">
-      <h1>Audiology BI Analytics</h1>
-    </div>
+    <h1>Audiology BI Platform</h1>
 
-    <!-- INPUT PANEL -->
-    <div class="card glass">
+    <div class="card">
       <h3>Add Record</h3>
 
-      <div class="grid">
-        <input id="name" placeholder="Audiologist">
-        <input id="period" type="number" placeholder="Period">
+      <input id="name" placeholder="Audiologist">
+      <input id="period" type="number" placeholder="Period">
+      <input id="sales" type="number" placeholder="Sales">
+      <input id="hearingAids" type="number" placeholder="Hearing Aids">
+      <input id="wax" type="number" placeholder="Wax">
+      <input id="waxRevenue" type="number" placeholder="Wax Revenue">
+      <input id="refunds" type="number" placeholder="Refunds">
+      <input id="hhc" type="number" placeholder="HHC">
+      <input id="hce" type="number" placeholder="HCE">
 
-        <input id="sales" type="number" placeholder="Sales">
-        <input id="hearingAids" type="number" placeholder="Hearing Aids">
-        <input id="wax" type="number" placeholder="Wax">
-        <input id="waxRevenue" type="number" placeholder="Wax Revenue">
-
-        <input id="refunds" type="number" placeholder="Refunds">
-        <input id="hhc" type="number" placeholder="HHC">
-        <input id="hce" type="number" placeholder="HCE">
-      </div>
-
-      <button onclick="addEntry()">Add Entry</button>
+      <button onclick="addEntry()">Add</button>
     </div>
 
-    <!-- DASHBOARD VIEW -->
     <div id="view"></div>
 
   </div>
 
+</div>
+
+<!-- EDIT MODAL -->
+<div id="modal" class="modal hidden">
+  <div class="modal-box">
+    <h3>Edit Record</h3>
+
+    <input id="e_name">
+    <input id="e_period" type="number">
+    <input id="e_sales" type="number">
+    <input id="e_hearingAids" type="number">
+    <input id="e_wax" type="number">
+    <input id="e_waxRevenue" type="number">
+    <input id="e_refunds" type="number">
+    <input id="e_hhc" type="number">
+    <input id="e_hce" type="number">
+
+    <button onclick="saveEdit()">Save</button>
+    <button onclick="closeModal()">Cancel</button>
+  </div>
 </div>
 
 </body>
