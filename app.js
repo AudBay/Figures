@@ -8,11 +8,12 @@ window.onload = async () => {
   await gapi.client.init({ discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] });
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID, scope: SCOPES,
-    callback: t => { accessToken = t.access_token; alert("Connected!"); }
+    callback: t => { accessToken = t.access_token; document.getElementById("loginBtn").innerText = "Connected"; }
   });
   render();
 };
 
+/* --- DATA LOGIC --- */
 function addEntry() {
   const newRecord = {
     name: document.getElementById("name").value || "Unknown",
@@ -27,6 +28,8 @@ function addEntry() {
   };
   data.push(newRecord);
   render();
+  // Clear inputs after save
+  document.querySelectorAll('.entry-card input').forEach(i => i.value = i.type === 'number' ? 0 : '');
 }
 
 function calcMetrics(arr) {
@@ -43,11 +46,55 @@ function calcMetrics(arr) {
   });
 }
 
+/* --- MODAL LOGIC (FIXED) --- */
+function openEdit(i) {
+  editIndex = i;
+  const e = data[i];
+  document.getElementById("e_name").value = e.name;
+  document.getElementById("e_period").value = e.period;
+  document.getElementById("e_sales").value = e.sales;
+  document.getElementById("e_hearingAids").value = e.hearingAids;
+  document.getElementById("e_wax").value = e.wax;
+  document.getElementById("e_waxRevenue").value = e.waxRevenue;
+  document.getElementById("e_refunds").value = e.refunds;
+  document.getElementById("e_hhc").value = e.hhc;
+  document.getElementById("e_hce").value = e.hce;
+  document.getElementById("modal").classList.remove("hidden");
+}
+
+function saveEdit() {
+  data[editIndex] = {
+    name: document.getElementById("e_name").value,
+    period: parseInt(document.getElementById("e_period").value),
+    sales: parseFloat(document.getElementById("e_sales").value),
+    hearingAids: parseInt(document.getElementById("e_hearingAids").value),
+    wax: parseInt(document.getElementById("e_wax").value),
+    waxRevenue: parseFloat(document.getElementById("e_waxRevenue").value),
+    refunds: parseFloat(document.getElementById("e_refunds").value),
+    hhc: parseInt(document.getElementById("e_hhc").value),
+    hce: parseInt(document.getElementById("e_hce").value)
+  };
+  closeModal();
+  render();
+}
+
+function closeModal() {
+  document.getElementById("modal").classList.add("hidden");
+}
+
+function deleteEntry(i) {
+  if(confirm("Delete this record?")) {
+    data.splice(i, 1);
+    render();
+  }
+}
+
+/* --- VIEW CONTROLS --- */
 function setView(v) {
   view = v;
   document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
   document.getElementById(`nav-${v}`).classList.add('active');
-  document.getElementById('view-controls').className = (v === 'charts') ? '' : 'hidden';
+  document.getElementById('view-controls').style.display = (v === 'charts') ? 'block' : 'none';
   render();
 }
 
@@ -56,15 +103,18 @@ function render() {
   const container = document.getElementById("view");
   
   if (view === "overview") {
-    const totalRev = d.reduce((acc, curr) => acc + curr.net, 0);
-    const totalWax = d.reduce((acc, curr) => acc + curr.wax, 0);
-    const totalHHC = d.reduce((acc, curr) => acc + curr.hhc, 0);
+    const sums = d.reduce((a, b) => ({
+      net: a.net + b.net,
+      wax: a.wax + b.wax,
+      hhc: a.hhc + b.hhc,
+      sales: a.sales + b.sales
+    }), {net:0, wax:0, hhc:0, sales:0});
 
     container.innerHTML = `
       <div class="kpi-grid">
-        <div class="kpi-card"><h4>Total Revenue (Net)</h4><p>£${totalRev.toLocaleString()}</p></div>
-        <div class="kpi-card"><h4>Wax to HHC Conversion</h4><p>${totalWax ? ((totalHHC/totalWax)*100).toFixed(1) : 0}%</p></div>
-        <div class="kpi-card"><h4>Total Records</h4><p>${d.length}</p></div>
+        <div class="kpi-card"><h4>Total Net Revenue</h4><p>£${sums.net.toLocaleString()}</p></div>
+        <div class="kpi-card"><h4>Wax to HHC Conversion</h4><p>${sums.wax ? ((sums.hhc/sums.wax)*100).toFixed(1) : 0}%</p></div>
+        <div class="kpi-card"><h4>Audiology Sales</h4><p>£${sums.sales.toLocaleString()}</p></div>
       </div>
     `;
   }
@@ -73,15 +123,16 @@ function render() {
     container.innerHTML = `
       <div class="card">
         <table>
-          <thead>
-            <tr><th>Name</th><th>Period</th><th>Net Rev</th><th>HHC \u2192 HCE %</th><th>HCE \u2192 Sale %</th><th>Actions</th></tr>
-          </thead>
+          <thead><tr><th>Name</th><th>Period</th><th>Net Rev</th><th>Conv %</th><th>Actions</th></tr></thead>
           <tbody>
             ${d.map((e, i) => `
               <tr>
                 <td>${e.name}</td><td>${e.period}</td><td>£${e.net.toFixed(2)}</td>
-                <td>${e.hhcToHce.toFixed(1)}%</td><td>${e.hceToSale.toFixed(1)}%</td>
-                <td><button onclick="deleteEntry(${i})" class="btn-small">Delete</button></td>
+                <td>${e.hceToSale.toFixed(1)}%</td>
+                <td>
+                  <button onclick="openEdit(${i})" class="btn-small">Edit</button>
+                  <button onclick="deleteEntry(${i})" class="btn-small btn-danger">Delete</button>
+                </td>
               </tr>
             `).join('')}
           </tbody>
@@ -92,31 +143,21 @@ function render() {
   if (view === "charts") {
     const groupKey = document.getElementById("groupBy").value;
     const grouped = {};
-    
     d.forEach(item => {
       const key = item[groupKey];
-      if (!grouped[key]) grouped[key] = { net: 0, sales: 0 };
-      grouped[key].net += item.net;
-      grouped[key].sales += item.sales;
+      if (!grouped[key]) grouped[key] = 0;
+      grouped[key] += item.net;
     });
 
     container.innerHTML = `<div class="card"><canvas id="mainChart"></canvas></div>`;
-    
     const ctx = document.getElementById('mainChart').getContext('2d');
     if (chart) chart.destroy();
     chart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: Object.keys(grouped),
-        datasets: [{
-          label: 'Net Revenue (£)',
-          data: Object.values(grouped).map(v => v.net),
-          backgroundColor: '#2563eb'
-        }]
-      },
-      options: { responsive: true, plugins: { title: { display: true, text: `Comparison by ${groupKey}` } } }
+        datasets: [{ label: 'Net Revenue by ' + groupKey, data: Object.values(grouped), backgroundColor: '#2563eb' }]
+      }
     });
   }
 }
-
-// Drive logic remains same as original but uses the fixed document.getElementById calls
