@@ -1,79 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Audiology BI Platform</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://accounts.google.com/gsi/client"></script>
-  <script src="https://apis.google.com/js/api.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="app.js" defer></script>
+<meta charset="UTF-8">
+<title>Audiology BI SaaS</title>
+
+<link rel="stylesheet" href="styles.css">
+
+<script src="https://accounts.google.com/gsi/client"></script>
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="app.js" defer></script>
 </head>
+
 <body>
 
 <div class="layout">
+
   <div class="sidebar">
     <h2>BI SaaS</h2>
-    <button id="nav-overview" class="active" onclick="setView('overview')">Overview</button>
-    <button id="nav-table" onclick="setView('table')">Data Records</button>
-    <button id="nav-charts" onclick="setView('charts')">Comparisons</button>
+
+    <button onclick="setView('overview')">Overview</button>
+    <button onclick="setView('table')">Data</button>
+    <button onclick="setView('charts')">Charts</button>
+    <button onclick="setView('insights')">Insights</button>
+
     <hr>
-    <button id="loginBtn" class="action-btn">1. Login</button>
-    <button id="loadBtn" class="action-btn">2. Load Data</button>
-    <button id="saveBtn" class="action-btn">3. Save Data</button>
+
+    <button id="loginBtn">Login</button>
+    <button id="loadBtn">Load</button>
+    <button id="saveBtn">Save</button>
   </div>
 
   <div class="main">
-    <h1>Audiology Analytics</h1>
 
-    <!-- Grouping Control for Comparisons -->
-    <div id="view-controls" class="hidden" style="margin-bottom: 20px;">
-      <label>Compare by: </label>
-      <select id="groupBy" onchange="render()">
-        <option value="name">Audiologist</option>
-        <option value="period">Period</option>
-      </select>
-    </div>
+    <h1>Audiology BI Platform</h1>
 
     <div class="card">
       <h3>Add Record</h3>
-      <div class="form-grid">
-        <div class="input-group"><label>Audiologist</label><input id="name" placeholder="Name"></div>
-        <div class="input-group"><label>Period</label><input id="period" type="number" value="1"></div>
-        <div class="input-group"><label>Sales (£)</label><input id="sales" type="number" value="0"></div>
-        <div class="input-group"><label>H. Aids</label><input id="hearingAids" type="number" value="0"></div>
-        <div class="input-group"><label>Wax Count</label><input id="wax" type="number" value="0"></div>
-        <div class="input-group"><label>Wax £</label><input id="waxRevenue" type="number" value="0"></div>
-        <div class="input-group"><label>Refunds</label><input id="refunds" type="number" value="0"></div>
-        <div class="input-group"><label>HHC</label><input id="hhc" type="number" value="0"></div>
-        <div class="input-group"><label>HCE</label><input id="hce" type="number" value="0"></div>
-      </div>
-      <button class="btn-primary" onclick="addEntry()">Add Entry</button>
+
+      <input id="name" placeholder="Audiologist">
+      <input id="period" type="number" placeholder="Period">
+      <input id="sales" type="number" placeholder="Sales">
+      <input id="hearingAids" type="number" placeholder="Hearing Aids">
+      <input id="wax" type="number" placeholder="Wax">
+      <input id="waxRevenue" type="number" placeholder="Wax Revenue">
+      <input id="refunds" type="number" placeholder="Refunds">
+      <input id="hhc" type="number" placeholder="HHC">
+      <input id="hce" type="number" placeholder="HCE">
+
+      <button onclick="addEntry()">Add</button>
     </div>
 
     <div id="view"></div>
+
   </div>
+
 </div>
 
-<!-- Edit Modal -->
+<!-- EDIT MODAL -->
 <div id="modal" class="modal hidden">
   <div class="modal-box">
     <h3>Edit Record</h3>
-    <div class="form-grid">
-      <input id="e_name">
-      <input id="e_period" type="number">
-      <input id="e_sales" type="number">
-      <input id="e_hearingAids" type="number">
-      <input id="e_wax" type="number">
-      <input id="e_waxRevenue" type="number">
-      <input id="e_refunds" type="number">
-      <input id="e_hhc" type="number">
-      <input id="e_hce" type="number">
-    </div>
-    <div style="margin-top: 20px;">
-      <button class="btn-primary" onclick="saveEdit()">Apply Changes</button>
-      <button onclick="closeModal()">Cancel</button>
-    </div>
+
+    <input id="e_name">
+    <input id="e_period" type="number">
+    <input id="e_sales" type="number">
+    <input id="e_hearingAids" type="number">
+    <input id="e_wax" type="number">
+    <input id="e_waxRevenue" type="number">
+    <input id="e_refunds" type="number">
+    <input id="e_hhc" type="number">
+    <input id="e_hce" type="number">
+
+    <button onclick="saveEdit()">Save</button>
+    <button onclick="closeModal()">Cancel</button>
   </div>
 </div>
 
