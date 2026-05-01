@@ -1,65 +1,46 @@
 :root {
-  --bg-body: #f1f5f9;
+  --bg-body: #f8fafc;
   --bg-card: #ffffff;
-  --text-main: #1e293b;
+  --text-main: #0f172a;
   --text-muted: #64748b;
   --accent: #2563eb;
   --border: #e2e8f0;
-  --success: #10b981;
   --danger: #ef4444;
 }
 
-body {
-  margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--bg-body); color: var(--text-main);
-}
-
+body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg-body); color: var(--text-main); }
 .layout { display: flex; height: 100vh; }
+.sidebar { width: 250px; background: white; padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
 
-.sidebar {
-  width: 260px; background: #ffffff; padding: 24px;
-  border-right: 1px solid var(--border); display: flex; flex-direction: column;
-}
-
-.logo { font-weight: 800; font-size: 1.4rem; color: var(--accent); margin-bottom: 30px; }
-
-.sidebar button {
-  width: 100%; text-align: left; padding: 12px; margin-bottom: 8px;
-  background: none; border: none; border-radius: 8px;
-  color: var(--text-muted); cursor: pointer; font-weight: 600;
+.sidebar button { 
+  width: 100%; text-align: left; padding: 12px; margin: 4px 0; border: none; 
+  border-radius: 6px; cursor: pointer; background: none; color: var(--text-muted); font-weight: 500; 
 }
 
 .sidebar button.active { background: #eff6ff; color: var(--accent); }
-.action-btn { border: 1px solid var(--border) !important; margin-top: 5px; text-align: center !important; }
-
 .main { flex: 1; padding: 40px; overflow-y: auto; }
-.main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
 
-.card {
-  background: var(--bg-card); padding: 24px; border-radius: 12px;
-  border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  margin-bottom: 24px;
+.card { 
+  background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border); 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; 
 }
 
-.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
-.input-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 15px; }
+.input-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
 
-input, select {
-  width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px;
-}
+.btn-primary { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+.btn-small { padding: 4px 8px; font-size: 0.8rem; border: 1px solid var(--border); background: white; border-radius: 4px; cursor: pointer; }
+.btn-danger { color: var(--danger); }
 
-.btn-primary { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; }
+/* MODAL FIX: Added !important to the hidden class */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.hidden { display: none !important; }
 
-/* Dashboard Styles */
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+.modal-box { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 700px; border: 1px solid var(--border); }
+.kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .kpi-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
-.kpi-card h4 { margin: 0; color: var(--text-muted); font-size: 0.85rem; }
-.kpi-card p { margin: 10px 0 0; font-size: 1.5rem; font-weight: 700; }
 
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th { text-align: left; padding: 12px; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 12px; border-bottom: 2px solid var(--border); font-size: 0.8rem; color: var(--text-muted); }
 td { padding: 12px; border-bottom: 1px solid var(--border); }
-
-.hidden { display: none; }
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; }
-.modal-box { background: white; padding: 30px; border-radius: 12px; width: 80%; max-width: 800px; }
