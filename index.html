@@ -1,73 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Audiology Analytics Pro</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://accounts.google.com/gsi/client"></script>
-  <script src="https://apis.google.com/js/api.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="app.js" defer></script>
-</head>
-<body>
+<div class="sidebar">
+    <h2 style="color:var(--accent); margin-bottom: 20px;">BI Analytics</h2>
+    <button id="nav-overview" class="active" onclick="setView('overview')">Overview</button>
+    <button id="nav-table" onclick="setView('table')">Records</button>
+    <button id="nav-charts" onclick="setView('charts')">Comparison</button>
+    
+    <hr style="width:100%; border:0; border-top:1px solid var(--border); margin:20px 0;">
+    
+    <button id="loginBtn" class="action-btn">1. Google Login</button>
+    <button id="loadBtn" class="action-btn">2. Load Data</button>
+    <button id="saveBtn" class="action-btn">3. Save Data</button>
 
-<div class="layout">
-  <div class="sidebar">
-    <div class="logo">Audiology BI</div>
-    <div class="sidebar-nav">
-      <button id="nav-overview" class="active" onclick="setView('overview')">Dashboard</button>
-      <button id="nav-table" onclick="setView('table')">Data Records</button>
-      <button id="nav-charts" onclick="setView('charts')">Comparisons</button>
+    <!-- NEW STATUS LOG -->
+    <div id="statusLog" style="margin-top: 20px; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 10px;">
+        System: Ready
     </div>
-    <hr>
-    <button id="loginBtn" class="action-btn">Connect Google</button>
-    <button id="loadBtn" class="action-btn">Load Data</button>
-    <button id="saveBtn" class="action-btn">Save to Drive</button>
-  </div>
-
-  <div class="main">
-    <header class="main-header">
-      <h1>Performance Insights</h1>
-      <div id="view-controls" class="hidden">
-        <label>Group Analysis By: </label>
-        <select id="groupBy" onchange="render()">
-          <option value="name">Audiologist</option>
-          <option value="period">Period (Week/Month)</option>
-        </select>
-      </div>
-    </header>
-
-    <div class="card entry-card">
-      <h3>New Entry</h3>
-      <div class="form-grid">
-        <div class="input-group"><label>Name</label><input id="name" type="text" placeholder="Audiologist Name"></div>
-        <div class="input-group"><label>Period</label><input id="period" type="number" placeholder="1"></div>
-        <div class="input-group"><label>Audiology Sales (£)</label><input id="sales" type="number" value="0"></div>
-        <div class="input-group"><label>Hearing Aids Sold</label><input id="hearingAids" type="number" value="0"></div>
-        <div class="input-group"><label>Wax Removals</label><input id="wax" type="number" value="0"></div>
-        <div class="input-group"><label>Wax Revenue (£)</label><input id="waxRevenue" type="number" value="0"></div>
-        <div class="input-group"><label>Refunds (£)</label><input id="refunds" type="number" value="0"></div>
-        <div class="input-group"><label>HHC</label><input id="hhc" type="number" value="0"></div>
-        <div class="input-group"><label>HCE</label><input id="hce" type="number" value="0"></div>
-      </div>
-      <button class="btn-primary" onclick="addEntry()">Save Record</button>
-    </div>
-
-    <div id="view"></div>
-  </div>
 </div>
-
-<div id="modal" class="modal hidden">
-  <div class="modal-box">
-    <h3>Edit Record</h3>
-    <div id="edit-form" class="form-grid"></div>
-    <div class="modal-actions">
-      <button class="btn-primary" onclick="saveEdit()">Apply Changes</button>
-      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-</body>
-</html>
