@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audiology BI Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-top">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">AudioBI</span>
+        <span class="brand-tagline">Intelligence Platform</span>
+      </div>
+    </div>
+    <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Analytics</div>
+    <button class="nav-item active" data-view="overview" onclick="setView('overview')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Overview</span>
+    </button>
+    <button class="nav-item" data-view="charts" onclick="setView('charts')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Charts</span>
+    </button>
+    <button class="nav-item" data-view="rankings" onclick="setView('rankings')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      <span>Rankings</span>
+    </button>
+    <button class="nav-item" data-view="conversions" onclick="setView('conversions')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Conversions</span>
+    </button>
+    <button class="nav-item" data-view="table" onclick="setView('table')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+      <span>Data Table</span>
+    </button>
+
+    <div class="nav-section-label" style="margin-top:1.5rem;">Data</div>
+    <button class="nav-item" onclick="openAddModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <span>Add Record</span>
+    </button>
+
+    <div class="nav-section-label" style="margin-top:1.5rem;">Sync</div>
+    <div class="drive-status" id="drive-status">
+      <div class="drive-dot" id="drive-dot"></div>
+      <span id="drive-status-text">Not connected</span>
+    </div>
+    <button class="nav-item drive-btn" id="loginBtn" onclick="driveLogin()">
+      <svg width="18" height="18" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+        <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+        <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
+        <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+        <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+        <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+        <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 27h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+      </svg>
+      <span id="loginBtnLabel">Connect Drive</span>
+    </button>
+    <button class="nav-item" id="loadBtn" onclick="driveLoad()" style="display:none">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Load from Drive</span>
+    </button>
+    <button class="nav-item accent" id="saveBtn" onclick="driveSave()" style="display:none">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      <span>Save to Drive</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
+      <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <span class="theme-toggle-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════
+     MAIN
+════════════════════════════════════════════════ -->
+<div class="main-wrapper">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="topbar-menu" onclick="toggleSidebar()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-breadcrumb">
+        <span id="page-title">Overview</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="period-filter">
+        <label for="period-filter">Period</label>
+        <select id="period-filter" onchange="render()">
+          <option value="all">All Periods</option>
+        </select>
+      </div>
+      <div class="performer-filter">
+        <label for="performer-filter">Performer</label>
+        <select id="performer-filter" onchange="render()">
+          <option value="all">All Performers</option>
+        </select>
+      </div>
+      <div class="sync-indicator" id="sync-indicator" title="Sync status">
+        <div class="sync-dot"></div>
+        <span id="sync-label">Local</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content" id="main-content">
+    <!-- Rendered by JS -->
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════════ -->
+
+<!-- Add / Edit Record Modal -->
+<div class="modal-overlay hidden" id="record-modal-overlay" onclick="closeRecordModal(event)">
+  <div class="modal-box" id="record-modal">
+    <div class="modal-header">
+      <h3 id="record-modal-title">Add Record</h3>
+      <button class="modal-close-btn" onclick="closeRecordModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-grid">
+        <div class="field">
+          <label>Audiologist Name</label>
+          <input type="text" id="m-name" placeholder="e.g. Sarah Mitchell" />
+        </div>
+        <div class="field">
+          <label>Period</label>
+          <input type="text" id="m-period" placeholder="e.g. Jan 2025 or P1" />
+        </div>
+        <div class="field">
+          <label>Total Sales (£)</label>
+          <input type="number" id="m-totalSales" placeholder="0.00" step="0.01" />
+        </div>
+        <div class="field">
+          <label>Hearing Aid Revenue (£)</label>
+          <input type="number" id="m-haRevenue" placeholder="0.00" step="0.01" />
+        </div>
+        <div class="field">
+          <label>Non-HA Revenue (£)</label>
+          <input type="number" id="m-nonHaRevenue" placeholder="0.00" step="0.01" />
+        </div>
+        <div class="field">
+          <label>Wax Removal Revenue (£)</label>
+          <input type="number" id="m-waxRevenue" placeholder="0.00" step="0.01" />
+        </div>
+        <div class="field">
+          <label>Hearing Aid Refunds (£)</label>
+          <input type="number" id="m-haRefunds" placeholder="0.00" step="0.01" />
+        </div>
+        <div class="field">
+          <label>AOV — Average Order Value (£)</label>
+          <input type="number" id="m-aov" placeholder="0.00" step="0.01" />
+        </div>
+        <div class="field">
+          <label>£ / Clinic</label>
+          <input type="number" id="m-revenuePerClinic" placeholder="0.00" step="0.01" />
+        </div>
+        <div class="field">
+          <label>Binaural Rate (%)</label>
+          <input type="number" id="m-binauralRate" placeholder="0.0" step="0.1" min="0" max="100" />
+        </div>
+        <div class="field">
+          <label>IFC Take-Up (%)</label>
+          <input type="number" id="m-ifcTakeUp" placeholder="0.0" step="0.1" min="0" max="100" />
+        </div>
+        <div class="field">
+          <label>HCE's (Hearing Care Evaluations)</label>
+          <input type="number" id="m-hce" placeholder="0" />
+        </div>
+        <div class="field">
+          <label>HCE to Sale (count)</label>
+          <input type="number" id="m-hceToSale" placeholder="0" />
+        </div>
+        <div class="field">
+          <label>Wax Removals</label>
+          <input type="number" id="m-waxRemovals" placeholder="0" />
+        </div>
+        <div class="field">
+          <label>HHC's (Hearing Health Checks)</label>
+          <input type="number" id="m-hhc" placeholder="0" />
+        </div>
+        <div class="field">
+          <label>HHC to HCE (count)</label>
+          <input type="number" id="m-hhcToHce" placeholder="0" />
+        </div>
+      </div>
+      <p class="modal-note">* Percentages (HCE to Sale %, Wax to HHC %, HHC to HCE %) are calculated automatically.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeRecordModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveRecord()">Save Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay hidden" id="delete-modal-overlay" onclick="closeDeleteModal(event)">
+  <div class="modal-box modal-box--sm">
+    <div class="modal-header">
+      <h3>Delete Record</h3>
+      <button class="modal-close-btn" onclick="closeDeleteModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete this record? This cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
